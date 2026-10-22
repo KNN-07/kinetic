@@ -9,9 +9,9 @@ Shape timing, animate type, and build your scene from one dockable **After Effec
 
 [Download v0.3.0](https://github.com/KNN-07/kinetic/releases/tag/v0.3.0) · [Installation](docs/INSTALL.md) · [Development](docs/DEVELOPMENT.md) · [Report an issue](https://github.com/KNN-07/kinetic/issues)
 
-[![Generated Kinetic UI concept showing compact Ease, Text, and Layers workspaces.](docs/design/kinetic-ui-concept.png)](docs/design/README.md)
+[![Kinetic 0.3.0 showing Ease, Text, and Layers workspaces in browser preview.](docs/images/kinetic-0.3.0-ui.png)](docs/images/kinetic-0.3.0-ui.png)
 
-*AI-generated design concept used to guide the implemented interface. This is not a runtime screenshot; visual verification of the 0.2 redesign is pending. [Design notes and prompt](docs/design/README.md).*
+*Kinetic 0.3.0 — Ease, Text, and Layers in browser preview. Applying actions requires After Effects.*
 
 ## Five workspaces. One panel.
 
