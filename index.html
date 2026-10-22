@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Kinetic — Motion toolkit</title>
+  <link rel="stylesheet" href="css/panel.css">
+</head>
+<body>
+  <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="i-ease" viewBox="0 0 24 24"><path d="M4 19C15 19 9 5 20 5"/><circle cx="4" cy="19" r="1.4"/><circle cx="20" cy="5" r="1.4"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M8 20h8"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></symbol>
+    <symbol id="i-motion" viewBox="0 0 24 24"><path d="m13 3-8 11h6l-1 7 9-12h-6l1-6Z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7V5Z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M19 10a7 7 0 0 0-12-5L4 8m16 8-3 3a7 7 0 0 1-12-5"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="3"/><circle cx="16" cy="17" r="3"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 5M12 17v.2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 16v4h16v-4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path d="M9 8h11v13H9V8ZM5 16H3V3h11v2"/></symbol>
+    <symbol id="i-square" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/></symbol>
+    <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></symbol>
+    <symbol id="i-null" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM8 8l8 8m0-8-8 8"/></symbol>
+    <symbol id="i-adjust" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M12 5a7 7 0 0 1 0 14" fill="currentColor"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 6h12v12H3zM15 10l6-4v12l-6-4"/></symbol>
+    <symbol id="i-light" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M8 13a6 6 0 1 1 8 0l-1 3H9l-1-3ZM12 1v1M2 7l2 1m16 0 2-1"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m8 5 7 7-7 7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></symbol>
+  </defs></svg>
+
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2h3v20H3zm5 10L18 2h5L13 12l10 10h-5z"/></svg><span>KINETIC</span><span class="version">0.2.0</span></div>
+      <div class="header-actions"><button class="icon-button" id="help-button" title="Help" aria-label="Open help"><svg><use href="#i-help"/></svg></button><button class="icon-button" id="settings-button" title="Settings" aria-label="Open settings"><svg><use href="#i-settings"/></svg></button></div>
+    </header>
+    <nav class="tab-nav" aria-label="Toolkit" role="tablist">
+      <button class="tab active" id="tab-ease" role="tab" aria-selected="true" aria-controls="page-ease" data-tab="ease"><svg><use href="#i-ease"/></svg><span>Ease</span></button>
+      <button class="tab" id="tab-text" role="tab" aria-selected="false" aria-controls="page-text" data-tab="text" tabindex="-1"><svg><use href="#i-text"/></svg><span>Text</span></button>
+      <button class="tab" id="tab-layers" role="tab" aria-selected="false" aria-controls="page-layers" data-tab="layers" tabindex="-1"><svg><use href="#i-layers"/></svg><span>Layers</span></button>
+      <button class="tab" id="tab-motion" role="tab" aria-selected="false" aria-controls="page-motion" data-tab="motion" tabindex="-1"><svg><use href="#i-motion"/></svg><span>Motion</span></button>
+    </nav>
+    <main>
+      <section id="page-ease" class="tool-page" role="tabpanel" aria-labelledby="tab-ease">
+        <div class="ease-layout">
+          <div class="curve-workspace">
+            <div class="graph-toolbar"><div class="graph-title">Bézier<span id="curve-name">Smooth</span></div><div class="inline-actions"><button class="icon-button" id="reverse-curve" aria-label="Reverse curve" title="Reverse curve"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4m10-8 4 4-4 4"/></svg></button><button class="icon-button" id="mirror-curve" aria-label="Make curve symmetric" title="Make curve symmetric"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l-5 5 5 5V7zm8 0 5 5-5 5V7z"/></svg></button><button class="icon-button" id="copy-curve" title="Copy Bézier values" aria-label="Copy Bézier values"><svg><use href="#i-copy"/></svg></button><button class="icon-button" id="reset-curve" title="Reset curve" aria-label="Reset curve"><svg><use href="#i-refresh"/></svg></button></div></div>
+            <div class="graph-panel">
+              <span class="graph-annotation-top" aria-hidden="true"><span>1.0</span></span>
+              <svg id="curve-editor" class="curve-editor" viewBox="0 0 440 276" role="group" aria-label="Cubic Bézier curve editor">
+                <defs><pattern id="graph-grid" width="39.4" height="24" x="30" y="12" patternUnits="userSpaceOnUse"><path d="M39.4 0H0v24" class="grid-line"/></pattern></defs>
+                <rect x="30" y="12" width="394" height="240" fill="url(#graph-grid)"/>
+                <path d="M30 12v240h394" class="axis-line"/><path d="M30 252 424 12" class="diagonal-line"/>
+                <path id="curve-area" fill="none"/>
+                <line id="handle-line-1" class="handle-line"/><line id="handle-line-2" class="handle-line"/>
+                <path id="curve-path" class="curve-path"/>
+                <circle cx="30" cy="252" r="4.5" class="endpoint"/><circle cx="424" cy="12" r="4.5" class="endpoint"/>
+                <circle id="curve-tracer" r="5" class="curve-tracer" hidden/>
+                <circle id="handle-1" r="5.5" class="curve-handle" tabindex="0" role="slider" aria-label="First curve control point; arrow keys move X and Y" aria-valuemin="0" aria-valuemax="1"/>
+                <circle id="handle-2" r="5.5" class="curve-handle" tabindex="0" role="slider" aria-label="Second curve control point; arrow keys move X and Y" aria-valuemin="0" aria-valuemax="1"/>
+                <text x="30" y="271" class="axis-text">0.0</text><text x="227" y="271" text-anchor="middle" class="axis-text">0.5</text><text x="424" y="271" text-anchor="end" class="axis-text">1.0</text><text id="axis-y-min" x="23" y="255" text-anchor="end" class="axis-text">0.0</text><text id="axis-y-mid" x="23" y="135" text-anchor="end" class="axis-text">0.5</text>
+              </svg>
+            </div>
+            <div class="coordinate-grid">
+              <label><span>X1</span><input type="number" id="x1" min="0" max="1" step="0.01" value="0.42" aria-label="First control point X"></label>
+              <label><span>Y1</span><input type="number" id="y1" min="-2" max="3" step="0.01" value="0" aria-label="First control point Y"></label>
+              <label><span>X2</span><input type="number" id="x2" min="0" max="1" step="0.01" value="0.58" aria-label="Second control point X"></label>
+              <label><span>Y2</span><input type="number" id="y2" min="-2" max="3" step="0.01" value="1" aria-label="Second control point Y"></label>
+            </div>
+            <div class="curve-code-row"><span>CSS</span><input id="curve-code" aria-label="Paste cubic Bézier values" title="Paste four values or cubic-bezier(...)" spellcheck="false" value="0.42, 0, 0.58, 1"></div>
+            <div class="preview-track-row"><button class="icon-button preview-play" id="preview-curve" title="Play curve preview" aria-label="Play curve preview"><svg><use href="#i-play"/></svg></button><div class="preview-track" id="preview-track"><span id="preview-progress" class="preview-progress"></span><span id="preview-object" class="preview-object"></span></div><span class="preview-duration" id="curve-preview-time">0.0 / 1.2s</span></div>
+            <button class="primary-button full" id="apply-ease" title="Select at least two keyframes on a numeric property">Apply easing</button>
+          </div>
+          <aside class="curve-library">
+            <div class="library-toolbar"><h2>Presets</h2><div class="segmented compact-segments" role="group" aria-label="Curve library"><button id="library-built-in" class="active" aria-pressed="true">Built-in</button><button id="library-saved" aria-pressed="false">Saved</button></div><div class="inline-actions"><button class="icon-button" id="save-curve" title="Save curve" aria-label="Save current curve"><svg><use href="#i-plus"/></svg></button><button class="icon-button" id="import-curves" title="Import library" aria-label="Import curve library"><svg><use href="#i-download"/></svg></button><button class="icon-button" id="export-curves" title="Export library" aria-label="Export curve library"><svg><use href="#i-upload"/></svg></button></div><span id="preset-count" class="sr-only"></span></div>
+            <div class="preset-grid" id="curve-presets"></div><div id="saved-curves" class="saved-curves" hidden></div><input id="library-file" type="file" accept=".json,application/json" hidden>
+            <div class="quick-tools" role="group" aria-label="Quick layer actions"><button id="quick-anchor" title="Move anchor to center on selected supported layers"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 2v6m0 8v6M2 12h6m8 0h6"/></svg><span>Anchor</span></button><button id="quick-null" title="Create null layer"><svg><use href="#i-null"/></svg><span>Null</span></button><button id="quick-duplicate" title="Duplicate selected layers"><svg><use href="#i-copy"/></svg><span>Duplicate</span></button><button id="quick-sequence" title="Sequence selected layers using the Layers tab offset"><svg viewBox="0 0 24 24"><path d="M3 4h10M7 9h10M11 14h10M3 20h18"/></svg><span>Sequence</span></button></div>
+          </aside>
+        </div>
+      </section>
+      <section id="page-text" class="tool-page" role="tabpanel" aria-labelledby="tab-text" hidden>
+        <div class="text-layout">
+          <div class="text-visual"><div class="text-preview-stage"><div id="text-preview" aria-label="Text animation preview">Make it move</div><button class="icon-button stage-play" id="preview-text" aria-label="Replay text animation" title="Replay preview"><svg><use href="#i-play"/></svg></button></div><div class="text-preset-grid" id="text-presets"></div></div>
+          <div class="control-panel text-controls">
+            <div class="segmented unit-segments" role="group" aria-label="Animate by"><button class="active" data-text-unit="characters" aria-pressed="true">Characters</button><button data-text-unit="words" aria-pressed="false">Words</button><button data-text-unit="lines" aria-pressed="false">Lines</button></div><select id="text-unit" hidden aria-label="Animate by"><option value="characters">Characters</option><option value="words">Words</option><option value="lines">Lines</option></select>
+            <div class="paired-fields"><div class="field-group"><label for="text-mode">Mode</label><select id="text-mode"><option value="in">In</option><option value="out">Out</option><option value="both">In + out</option></select></div><div class="field-group"><label for="text-direction">Direction</label><select id="text-direction"><option value="up">Up</option><option value="down">Down</option><option value="left">Left</option><option value="right">Right</option></select></div></div>
+            <div class="paired-fields"><div class="field-group"><label for="text-duration">Duration</label><div class="unit-input"><input type="number" id="text-duration" value="0.6" min="0.05" max="30" step="0.05" aria-label="Duration seconds"><span>s</span></div></div><div class="field-group"><label for="text-stagger">Stagger</label><div class="unit-input"><input type="number" id="text-stagger" value="0.04" min="0" max="5" step="0.01" aria-label="Stagger seconds"><span>s</span></div></div></div>
+            <div class="paired-fields"><div class="field-group"><label for="text-distance">Distance</label><div class="unit-input"><input type="number" id="text-distance" value="60" min="0" max="2000" step="5" aria-label="Distance pixels"><span>px</span></div></div><div class="field-group"><label for="text-overshoot">Overshoot</label><div class="unit-input"><input type="number" id="text-overshoot" value="0" min="0" max="200" step="5" aria-label="Text overshoot percent"><span>%</span></div></div></div>
+            <label class="check-row"><input id="text-reverse" type="checkbox"><span>Reverse order</span></label><button class="primary-button full" id="apply-text" title="Select one or more text layers; animation starts at the playhead">Animate text</button><button class="secondary-button full" id="clear-text">Remove Kinetic animation</button>
+          </div>
+        </div>
+      </section>
+      <section id="page-layers" class="tool-page" role="tabpanel" aria-labelledby="tab-layers" hidden>
+        <div class="layers-layout">
+          <div><div class="creation-grid" id="layer-creators"></div><div class="layer-options">
+            <div class="field-group"><label for="layer-name">Name</label><input id="layer-name" type="text" maxlength="120" placeholder="Automatic"></div>
+            <div class="paired-fields"><div class="field-group"><label for="layer-width">Width</label><div class="unit-input"><input id="layer-width" type="number" min="1" max="30000" placeholder="Comp" aria-label="Layer width pixels"><span>px</span></div></div><div class="field-group"><label for="layer-height">Height</label><div class="unit-input"><input id="layer-height" type="number" min="1" max="30000" placeholder="Comp" aria-label="Layer height pixels"><span>px</span></div></div></div>
+            <div class="field-group"><label for="layer-text">Text</label><input id="layer-text" type="text" value="Make it move" maxlength="10000"></div><div class="color-field"><label for="layer-color">Fill</label><input type="color" id="layer-color" value="#ffffff"><span id="layer-color-value">#FFFFFF</span></div>
+          </div></div>
+          <div class="layer-tools"><div class="anchor-utilities"><div class="anchor-block"><h2>Anchor point</h2><div class="anchor-grid" id="anchor-grid" aria-label="Set anchor point"></div></div><div class="utility-grid" id="layer-utilities"></div></div>
+            <div class="utility-inline"><label for="sequence-frames">Sequence</label><input type="number" id="sequence-frames" value="3" min="0" max="10000" step="1"><span>frames</span><button class="secondary-button" id="sequence-layers">Apply</button></div>
+            <div class="utility-inline rename-inline"><label for="rename-prefix">Rename</label><input id="rename-prefix" type="text" value="Layer" maxlength="100"><button class="secondary-button" id="rename-layers">Apply</button></div>
+          </div>
+        </div>
+      </section>
+      <section id="page-motion" class="tool-page" role="tabpanel" aria-labelledby="tab-motion" hidden>
+        <div class="motion-layout"><div class="motion-visual"><div class="motion-stage"><div class="motion-crosshair"></div><div id="motion-object" class="motion-object"><svg viewBox="0 0 24 24"><path d="M3 2h3v20H3zm5 10L18 2h5L13 12l10 10h-5z"/></svg></div><span class="stage-caption" id="motion-caption">Wiggle preview</span><button class="icon-button stage-play" id="preview-motion" aria-label="Replay motion preview" title="Replay preview"><svg><use href="#i-play"/></svg></button></div><div class="motion-preset-grid" id="motion-presets"></div></div>
+          <div class="control-panel"><div class="section-line"><h2 id="motion-title">Wiggle</h2><span class="muted">Expression</span></div><p class="control-description" id="motion-description"></p><div class="field-group" id="frequency-field"><label for="motion-frequency">Frequency <span>per second</span></label><input id="motion-frequency" type="number" value="2" min="0.01" max="100" step="0.1"></div><div class="field-group" id="amplitude-field"><label for="motion-amplitude">Amplitude <span>property units</span></label><input id="motion-amplitude" type="number" value="20" min="0" max="10000" step="1"></div><div class="field-group" id="decay-field" hidden><label for="motion-decay">Decay <span>settling speed</span></label><input id="motion-decay" type="number" value="5" min="0.1" max="100" step="0.1"></div><div class="info-card" id="motion-requirements">Select a numeric property such as Position, Rotation, or Scale.</div><button class="primary-button full" id="apply-motion">Apply expression</button><button class="secondary-button full" id="clear-motion">Remove Kinetic expressions</button></div>
+        </div>
+      </section>
+    </main>
+    <footer class="app-footer"><span class="status-dot" id="connection-dot"></span><span class="preview-banner" id="preview-banner" hidden>Preview · open in After Effects</span><span class="context-label" id="selection-context">Connecting…</span><button class="icon-button" id="refresh-status" title="Refresh After Effects selection" aria-label="Refresh After Effects selection"><svg><use href="#i-refresh"/></svg></button></footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden><span id="toast-message"></span><button class="icon-button" id="dismiss-toast" aria-label="Dismiss notification"><svg><use href="#i-close"/></svg></button></div>
+  <div id="modal" class="modal-overlay" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="section-line"><h2 id="modal-title"></h2><button class="icon-button" id="close-modal" aria-label="Close dialog"><svg><use href="#i-close"/></svg></button></div><div id="modal-content"></div></div></div>
+  <script src="js/core.js"></script><script src="js/bridge.js"></script><script src="js/panel.js"></script>
+</body>
+</html>

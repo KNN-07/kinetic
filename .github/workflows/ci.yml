@@ -1,0 +1,32 @@
+name: Verify
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm test
+      - run: npm run build
+      - run: git diff --exit-code -- jsx/kinetic.jsx
+      - name: Check installer and create bundle
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./install-windows.ps1 -WhatIf
+          ./scripts/package.ps1
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: kinetic-installable
+          path: dist/*.zip

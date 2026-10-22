@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.kinetic.panel" ExtensionBundleVersion="0.2.0" ExtensionBundleName="Kinetic">
+  <ExtensionList><Extension Id="com.kinetic.panel.main" Version="0.2.0" /></ExtensionList>
+  <ExecutionEnvironment>
+    <HostList><Host Name="AEFT" Version="[25.0,26.9]" /></HostList>
+    <LocaleList><Locale Code="All" /></LocaleList>
+    <RequiredRuntimeList><RequiredRuntime Name="CSXS" Version="12.0" /></RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList><Extension Id="com.kinetic.panel.main"><DispatchInfo>
+    <Resources><MainPath>./index.html</MainPath><ScriptPath>./jsx/kinetic.jsx</ScriptPath></Resources>
+    <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+    <UI><Type>Panel</Type><Menu>Kinetic</Menu><Geometry>
+      <Size><Height>760</Height><Width>420</Width></Size>
+      <MinSize><Height>400</Height><Width>320</Width></MinSize>
+    </Geometry></UI>
+  </DispatchInfo></Extension></DispatchInfoList>
+</ExtensionManifest>

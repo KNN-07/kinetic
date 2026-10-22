@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kinetic — panel views</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#191a1d;color:#e3e4e7;font:12px 'Segoe UI',sans-serif;padding:20px}main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;max-width:1220px;margin:0 auto}figure{margin:0;min-width:0}figcaption{height:26px;color:#969aa3;font-size:11px;letter-spacing:.08em;text-transform:uppercase}iframe{display:block;width:100%;height:690px;border:1px solid #383a40;background:#252629}footer{max-width:1220px;margin:14px auto 0;color:#969aa3;font-size:11px}@media(max-width:700px){main{grid-template-columns:1fr}iframe{height:690px}}
+</style></head>
+<body><main>
+  <figure><figcaption>01 / Easing</figcaption><iframe title="Kinetic easing panel" src="../index.html" data-view="ease"></iframe></figure>
+  <figure><figcaption>02 / Text animation</figcaption><iframe title="Kinetic text panel" src="../index.html" data-view="text"></iframe></figure>
+  <figure><figcaption>03 / Layer tools</figcaption><iframe title="Kinetic layer panel" src="../index.html" data-view="layers"></iframe></figure>
+</main><footer>Kinetic 0.2 · Browser preview of the actual extension interface. Applying actions requires After Effects.</footer>
+<script>
+document.querySelectorAll('iframe').forEach(function(frame){frame.addEventListener('load',function(){var doc=frame.contentDocument;doc.getElementById('tab-'+frame.dataset.view).click();if(frame.dataset.view==='text'){doc.getElementById('settings-button').click();var reduce=doc.getElementById('setting-reduce');if(reduce&&!reduce.checked){reduce.click();}doc.getElementById('close-modal').click();}});});
+</script></body></html>

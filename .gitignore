@@ -1,0 +1,28 @@
+# Dependencies and local build output
+node_modules/
+dist/
+coverage/
+release/
+releases/
+
+# Downloadable release archives
+*.zip
+*.zxp
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+
+# Temporary files and OS metadata
+*.log
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# jsx/kinetic.jsx is deliberately tracked: releases include the prebuilt host.
