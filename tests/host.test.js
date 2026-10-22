@@ -264,3 +264,73 @@ test('text dispatch wraps module in undo and preserves explicit no-change failur
     assert.equal(host.request('text.clear').ok, false);
     assert.deepEqual(host.calls, {begin: 2, end: 2});
 });
+
+test('custom scripts execute without a composition and capture local print plus final value', () => {
+    const host = makeHost(); host.app.project.activeItem = null;
+    const result = host.request('scripts.run', {code: 'print("AE", app.version); print(7, true, null); 6 * 7;'});
+    assert.equal(result.ok, true);
+    assert.deepEqual(result.data, {output: 'AE 25.6\n7 true null', result: '42'});
+    assert.deepEqual(host.calls, {begin: 1, end: 1});
+    assert.equal(typeof host.context.print, 'undefined');
+});
+
+test('custom script validation happens before execution or undo grouping', () => {
+    const host = makeHost(); host.app.project.activeItem = null;
+    for (const payload of [{}, {code: null}, {code: 7}, {code: ''}, {code: ' \n\t '}, {code: 'x'.repeat(100001)}, []]) {
+        const result = host.request('scripts.run', payload);
+        assert.equal(result.ok, false);
+        assert.deepEqual(result.data, {output: '', result: ''});
+    }
+    assert.deepEqual(host.calls, {begin: 0, end: 0});
+    assert.equal(host.request('scripts.run', {code: '// ' + 'x'.repeat(99997)}).ok, true);
+});
+
+test('custom script errors preserve output and report native line detail without rollback claims', () => {
+    const host = makeHost();
+    const result = host.request('scripts.run', {code: 'print("before failure"); app.project.scriptChange = 123; var failure = new Error("Expected failure"); failure.line = 3; throw failure;'});
+    assert.equal(result.ok, false);
+    assert.match(result.message, /Script failed at line 3: Expected failure/);
+    assert.deepEqual(result.data, {output: 'before failure', result: ''});
+    assert.equal(host.app.project.scriptChange, 123);
+    assert.deepEqual(host.calls, {begin: 1, end: 1});
+});
+
+test('custom scripts report syntax errors and primitive throws while closing the undo group', () => {
+    const host = makeHost();
+    assert.equal(host.request('scripts.run', {code: 'var = ;'}).ok, false);
+    const thrownNull = host.request('scripts.run', {code: 'print("still captured"); throw null;'});
+    assert.equal(thrownNull.ok, false); assert.match(thrownNull.message, /null/);
+    assert.equal(thrownNull.data.output, 'still captured');
+    const fallbackLine = host.request('scripts.run', {code: 'throw {message:"Other line property", lineNumber:7};'});
+    assert.match(fallbackLine.message, /at line 7/);
+    assert.deepEqual(host.calls, {begin: 3, end: 3});
+});
+
+test('custom script print and returned values have bounded output with visible truncation', () => {
+    const host = makeHost();
+    const result = host.request('scripts.run', {code: 'var longText = new Array(20002).join("a"); print(longText); print("later"); longText;'});
+    assert.equal(result.ok, true);
+    assert.equal(result.data.output.length, 16000); assert.match(result.data.output, /\[output truncated\]$/);
+    assert.equal(result.data.result.length, 16000); assert.match(result.data.result, /\[result truncated\]$/);
+});
+
+test('custom script local declarations do not leak and $.writeln remains untouched', () => {
+    const host = makeHost(); let globalWrite = '';
+    const writeln = text => { globalWrite += text; };
+    host.context.$ = {writeln};
+    const result = host.request('scripts.run', {code: 'var localOnly = 5; var output = "local declaration"; print(output); $.writeln("native destination");'});
+    assert.equal(result.ok, true);
+    assert.equal(result.data.output, 'local declaration'); assert.equal(result.data.result, '');
+    assert.equal(globalWrite, 'native destination'); assert.equal(host.context.$.writeln, writeln);
+    assert.equal(typeof host.context.localOnly, 'undefined');
+    assert.equal(typeof host.context.output, 'undefined');
+});
+
+test('custom script output survives undo-finalization failure', () => {
+    const host = makeHost();
+    host.app.endUndoGroup = () => { host.calls.end++; throw Error('Undo finalization failed'); };
+    const result = host.request('scripts.run', {code: 'print("completed code"); 123;'});
+    assert.equal(result.ok, false); assert.equal(result.data.output, 'completed code');
+    assert.match(result.message, /Undo finalization failed/);
+    assert.deepEqual(host.calls, {begin: 1, end: 1});
+});

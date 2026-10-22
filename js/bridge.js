@@ -3,7 +3,7 @@
   var cep = root.__adobe_cep__;
   var isHost = !!(cep && typeof cep.evalScript === 'function');
   var busy = false;
-  var actions = ['status', 'easing.apply', 'layers.create', 'layers.tool', 'motion.apply', 'motion.clear', 'text.animate', 'text.clear'];
+  var actions = ['status', 'easing.apply', 'layers.create', 'layers.tool', 'motion.apply', 'motion.clear', 'text.animate', 'text.clear', 'scripts.run'];
   function call(action, payload) {
     if (actions.indexOf(action) < 0) return Promise.resolve({ ok: false, message: 'Unknown Kinetic command.' });
     if (!isHost) {
@@ -14,8 +14,13 @@
     if (busy) return Promise.resolve({ ok: false, message: 'After Effects is processing the previous command. Please wait.' });
     var request;
     try {
+      if (action === 'scripts.run') {
+        if (!payload || typeof payload.code !== 'string' || !/\S/.test(payload.code)) throw new Error('Enter a nonempty ExtendScript script.');
+        if (payload.code.length > 100000) throw new Error('Script must contain at most 100,000 characters.');
+      }
       request = JSON.stringify({ action: action, payload: payload || {} }).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-      if (request.length > 20000) throw new Error('Command is too large.');
+      // A valid script may expand sixfold when JSON escapes control characters.
+      if (request.length > (action === 'scripts.run' ? 600256 : 20000)) throw new Error('Command is too large.');
     } catch (error) { return Promise.resolve({ ok: false, message: error.message || 'Invalid command.' }); }
     busy = true;
     return new Promise(function (resolve) {

@@ -42,3 +42,33 @@ test('concurrent commands never double-dispatch into AE', async () => {
   finish('{"ok":true,"message":"Created one layer"}');
   assert.equal((await first).ok, true);
 });
+
+test('script action is allowed only through the host and never evaluated by browser preview', async () => {
+  const preview = bridge();
+  assert.equal((await preview.call('scripts.run', {code: 'throw new Error("must not execute here");'})).ok, false);
+  let received;
+  const b = bridge((script, done) => {
+    done(vm.runInNewContext(script, {Kinetic:{dispatch(request) {
+      received = request;
+      return JSON.stringify({ok:true,message:'Script completed.',data:{output:'host output',result:'7'}});
+    }}}));
+  });
+  const userCode = 'print("quoted \\\" text");\napp.project.numItems; // \u2028 separator';
+  const result = await b.call('scripts.run', {code:userCode});
+  assert.equal(received.action, 'scripts.run'); assert.equal(received.payload.code, userCode);
+  assert.equal(result.data.output, 'host output');
+});
+
+test('script bridge permits the full code limit including expanded JSON and rejects invalid input', async () => {
+  let count = 0;
+  const b = bridge((script, done) => { count++; done('{"ok":true,"message":"Accepted","data":{"output":"","result":""}}'); });
+  for (const payload of [{}, {code:7}, {code:'\n \t'}, {code:'x'.repeat(100001)}]) {
+    assert.equal((await b.call('scripts.run', payload)).ok, false);
+  }
+  assert.equal(count, 0);
+  assert.equal((await b.call('scripts.run', {code:'x'.repeat(100000)})).ok, true);
+  assert.equal((await b.call('scripts.run', {code:'\u0000'.repeat(100000)})).ok, true);
+  assert.equal(count, 2);
+  assert.equal((await b.call('layers.create', {name:'x'.repeat(21000)})).ok, false);
+  assert.equal(count, 2);
+});

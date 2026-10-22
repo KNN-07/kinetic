@@ -59,6 +59,7 @@ The smoke script is a starting point for host testing, not a complete compatibil
 - Bézier slopes are converted to signed, per-component native velocities. Exterior numerical ease values and interpolation types are preserved; edited keys use independent handles with temporal auto-Bezier and continuous flags disabled.
 - AE's minimum influence is 0.1%. Finite endpoint handles may require a reported approximation. True vertical endpoint tangents are rejected because they require infinite native velocity.
 - Curve-library import accepts validated data, not executable code. Saved curves use browser storage and can be exported to JSON.
+- Shift-drag constrains a handle to the nearest horizontal or vertical axis through its endpoint, measured in graph pixels. Changing Shift during a drag immediately applies or releases the constraint. Shift+arrow keys retain their larger nudge step.
 
 ### Text
 
@@ -86,6 +87,16 @@ The smoke script is a starting point for host testing, not a complete compatibil
 
 ## Host bridge
 
+### Custom scripts
+
+The **Scripts** tab accepts plain-text ExtendScript up to 100,000 characters. Open JSX accepts `.jsx`/`.js`; Save JSX exports the current draft. Import never executes code. The draft persists in local browser storage. Ctrl/Cmd+Enter or **Run script** sends the editor contents to AE; browser preview never evaluates this code.
+
+Scripts can run without an active composition. `print(...)` captures arguments separated by spaces and writes a line to the panel output. The final evaluation value is displayed when present; exceptions report their message and line number when AE supplies one. Output and result are each capped at 16,000 characters. `$.writeln` retains its normal ExtendScript behavior and is not captured.
+
+Custom scripts have the host's full scripting access, including whatever file/network access AE allows; they are not sandboxed. Only run code you intend to execute. A normal undo group encloses execution, but errors do not roll back completed changes, and external actions may not support Undo. The panel cannot interrupt a running script. The bridge's 30-second response timeout is not cancellation: wait for AE to finish before another command can run. Scripts that manage their own undo groups, use preprocessors such as `#include`, or depend on `$.fileName` should be run as script files through AE instead of this text evaluator.
+
+### Requests
+
 The browser sends a whitelisted action and a JSON-serialized payload to `Kinetic.dispatch(request)`. The host returns serialized JSON containing `ok`, `message`, and optional `data` and `warnings` fields.
 
 | Action | Purpose |
@@ -96,6 +107,7 @@ The browser sends a whitelisted action and a JSON-serialized payload to `Kinetic
 | `layers.tool` | Run a selected layer utility. |
 | `motion.apply`, `motion.clear` | Apply or remove owned motion expressions. |
 | `text.animate`, `text.clear` | Apply or remove owned text animation. |
+| `scripts.run` | Evaluate custom ExtendScript and return bounded `output` and `result` strings, retaining logs when evaluation fails. |
 
 Only one bridge command is in flight at a time. A response timeout does not cancel ExtendScript; the lock stays in place until AE replies. Avoid retries that could apply a mutation twice. Mutation groups close in `finally`, and partial results expose skipped targets and reasons.
 

@@ -6,6 +6,7 @@
   var all = function (selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); };
   var STORAGE_KEY = 'kinetic.curves.v1';
   var SETTINGS_KEY = 'kinetic.settings.v1';
+  var SCRIPT_KEY = 'kinetic.script.v1';
   var curve = Core.presets[0].curve.slice();
   var curveLabel = Core.presets[0].name;
   var savedCurves = [];
@@ -96,7 +97,8 @@
       var result = await Bridge.call(action, payload || {});
       var warnings = Array.isArray(result.warnings) ? result.warnings.filter(Boolean) : [];
       notify(result.message + (warnings.length ? ' ' + warnings.join(' ') : ''), !result.ok);
-    } catch (error) { notify(error.message || 'After Effects could not complete this action.', true); }
+      return result;
+    } catch (error) { var message = error.message || 'After Effects could not complete this action.'; notify(message, true); return { ok: false, message: message }; }
     finally { mutationBusy = false; if (button) { button.innerHTML = original; button.disabled = wasDisabled; button.removeAttribute('aria-busy'); } refreshStatus(false); }
   }
   $('preview-banner').hidden = Bridge.isHost;
@@ -182,17 +184,46 @@
   function commitCurveCode() { try { updateCurve(Core.parseCurve($('curve-code').value)); } catch (error) { drawCurve(); notify(error.message, true); } }
   $('curve-code').addEventListener('change', commitCurveCode);
   $('curve-code').addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); commitCurveCode(); } });
+  function moveCurveHandle(shiftKey) {
+    if (!drag) return;
+    var index = drag.index, px = drag.point.x, py = drag.point.y;
+    if (shiftKey) {
+      // Choose the nearest axis in graph pixels, including an expanded overshoot range.
+      if (Math.abs(px - graphX(index)) >= Math.abs(py - graphY(index))) py = graphY(index);
+      else px = graphX(index);
+    }
+    var next = curve.slice();
+    next[index * 2] = round(clamp((px - 30) / 394, 0, 1));
+    next[index * 2 + 1] = round(clamp(graphRange.min + (252 - py) * (graphRange.max - graphRange.min) / 240, -2, 3));
+    updateCurve(next);
+  }
+  function endCurveDrag() {
+    if (!drag) return;
+    var current = drag, handle = $('handle-' + (current.index + 1));
+    drag = null;
+    if (handle.hasPointerCapture(current.pointerId)) handle.releasePointerCapture(current.pointerId);
+    drawCurve();
+  }
+  document.addEventListener('keydown', function (event) { if (drag && event.key === 'Shift' && !event.repeat) moveCurveHandle(true); });
+  document.addEventListener('keyup', function (event) { if (drag && event.key === 'Shift') moveCurveHandle(event.shiftKey); });
+  window.addEventListener('blur', endCurveDrag);
   [0, 1].forEach(function (index) {
     var handle = $('handle-' + (index + 1));
-    handle.addEventListener('pointerdown', function (event) { event.preventDefault(); handle.focus(); drag = { index: index, pointerId: event.pointerId }; handle.setPointerCapture(event.pointerId); });
+    handle.addEventListener('pointerdown', function (event) {
+      if (event.button !== 0 || drag) return;
+      event.preventDefault(); handle.focus();
+      drag = { index: index, pointerId: event.pointerId, point: { x: graphX(curve[index * 2]), y: graphY(curve[index * 2 + 1]) } };
+      handle.setPointerCapture(event.pointerId);
+      if (event.shiftKey) moveCurveHandle(true);
+    });
     handle.addEventListener('pointermove', function (event) {
       if (!drag || drag.index !== index || drag.pointerId !== event.pointerId) return;
       var svg = $('curve-editor'), point = svg.createSVGPoint(); point.x = event.clientX; point.y = event.clientY;
-      var p = point.matrixTransform(svg.getScreenCTM().inverse());
-      var next = curve.slice(); next[index * 2] = round(clamp((p.x - 30) / 394, 0, 1)); next[index * 2 + 1] = round(clamp(graphRange.min + (252 - p.y) * (graphRange.max - graphRange.min) / 240, -2, 3)); updateCurve(next);
+      drag.point = point.matrixTransform(svg.getScreenCTM().inverse());
+      moveCurveHandle(event.shiftKey);
     });
-    function endDrag(event) { if (!drag || drag.index !== index) return; drag = null; if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId); drawCurve(); }
-    handle.addEventListener('pointerup', endDrag); handle.addEventListener('pointercancel', endDrag);
+    function endDrag(event) { if (drag && drag.index === index && drag.pointerId === event.pointerId) endCurveDrag(); }
+    handle.addEventListener('pointerup', endDrag); handle.addEventListener('pointercancel', endDrag); handle.addEventListener('lostpointercapture', endDrag);
     handle.addEventListener('keydown', function (event) {
       var step = event.shiftKey ? .1 : .01; var next = curve.slice();
       if (event.key === 'ArrowLeft') next[index * 2] = clamp(round(next[index * 2] - step), 0, 1);
@@ -393,8 +424,58 @@
   $('apply-motion').addEventListener('click', function () { var payload = attempt(motionPayload); if (payload) runHost('motion.apply', payload, this); });
   $('clear-motion').addEventListener('click', function () { runHost('motion.clear', {}, this); });
 
+  var scriptStorageWarned = false;
+  var scriptImportVersion = 0;
+  function updateScriptCount() { $('script-count').textContent = $('script-editor').value.length + ' / 100k'; }
+  function saveScriptDraft() {
+    updateScriptCount();
+    try { localStorage.setItem(SCRIPT_KEY, $('script-editor').value); }
+    catch (error) { if (!scriptStorageWarned) { scriptStorageWarned = true; notify('Script draft could not be saved locally. Use Save JSX to keep a copy.', true); } }
+  }
+  try { var scriptDraft = localStorage.getItem(SCRIPT_KEY); if (scriptDraft !== null && scriptDraft.length <= 100000) $('script-editor').value = scriptDraft; }
+  catch (error) { /* The editor remains available when local storage is disabled. */ }
+  updateScriptCount();
+  $('script-editor').addEventListener('input', saveScriptDraft);
+  async function runCustomScript() {
+    var code = $('script-editor').value;
+    if (!code.trim() || code.length > 100000) { notify('Enter between 1 and 100,000 characters of ExtendScript.', true); $('script-editor').focus(); return; }
+    var response = await runHost('scripts.run', { code: code }, $('run-script'));
+    if (!response) return;
+    var data = response.data || {}, lines = [];
+    if (data.output) lines.push(data.output);
+    if (data.result) lines.push('Result: ' + data.result);
+    lines.push(response.message);
+    $('script-output').textContent = lines.join('\n');
+    $('script-output').classList.toggle('error', !response.ok);
+  }
+  $('run-script').addEventListener('click', runCustomScript);
+  $('script-editor').addEventListener('keydown', function (event) { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); if (!event.repeat) runCustomScript(); } });
+  $('clear-script-output').addEventListener('click', function () { $('script-output').textContent = 'Output cleared.'; $('script-output').classList.remove('error'); });
+  $('import-script').addEventListener('click', function () { $('script-file').click(); });
+  $('script-file').addEventListener('change', function () {
+    var file = this.files && this.files[0]; if (!file) return;
+    var importVersion = ++scriptImportVersion;
+    if (!/\.(jsx|js)$/i.test(file.name) || file.size > 400000) { notify('Choose a text .jsx or .js file up to 100,000 characters.', true); this.value = ''; return; }
+    var originalDraft = $('script-editor').value, reader = new FileReader();
+    reader.onload = function () {
+      if (importVersion !== scriptImportVersion) return;
+      var code = String(reader.result).replace(/^\uFEFF/, '');
+      if (code.length > 100000 || code.indexOf('\u0000') !== -1) notify('Choose a text script of at most 100,000 characters. Binary JSX is not supported.', true);
+      else if ($('script-editor').value !== originalDraft) notify('The editor changed while the file was loading. Open it again to replace the draft.', true);
+      else { $('script-editor').value = code; saveScriptDraft(); notify('Loaded ' + file.name + '. Review the code, then choose Run script.'); }
+      $('script-file').value = '';
+    };
+    reader.onerror = function () { if (importVersion !== scriptImportVersion) return; notify('That script file could not be read.', true); $('script-file').value = ''; };
+    reader.readAsText(file);
+  });
+  $('export-script').addEventListener('click', function () {
+    var url = URL.createObjectURL(new Blob([$('script-editor').value], { type: 'text/javascript;charset=utf-8' }));
+    var link = document.createElement('a'); link.href = url; link.download = 'kinetic-script.jsx'; document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 30000); notify('Script export requested.');
+  });
+
   $('help-button').addEventListener('click', function () {
-    openModal('Kinetic help', '<p><strong>Kinetic 0.2.0</strong> is an independent toolkit for After Effects 2025 and 2026. Everything starts with the active composition and your selection.</p><div class="help-entry"><strong>Ease · select keyframes first</strong><p>Select two or more keyframes on a numeric property. Drag a handle, use arrow keys (Shift for larger steps), or paste cubic-bezier values. For Position, use Separate Dimensions first. Spatial Position and Color are skipped. AE may clamp extreme endpoint influences.</p></div><div class="help-entry"><strong>Text · select text layers</strong><p>Choose a movement and apply it at the playhead. Animation uses native text animators. In and Out each start at the playhead. In + out starts at the playhead and ends its exit at the layer out point. Remove clears Kinetic animators only.</p></div><div class="help-entry"><strong>Layers · keep building</strong><p>Create a layer with optional naming, fill, and size. Layer utilities affect your selection. Trim uses the work area; reverse changes stack order. Anchor relocation preserves the artwork position. Anchor and Parent to null require static, unparented 2D layers.</p></div><div class="help-entry"><strong>Motion · select properties</strong><p>Select numeric properties to add an expression. Loop, Ping-pong, and Overshoot need at least two keyframes. Existing unrelated expressions are preserved. Remove clears Kinetic expressions only.</p></div><div class="help-entry"><strong>Your work stays local</strong><p>Saved curves live in this panel’s local storage. Export JSON for a backup. Browser previews demonstrate the controls; editing a composition requires the installed After Effects extension. All preview animations are illustrative.</p></div><div class="help-entry"><strong>Undo</strong><p>Use Edit → Undo in After Effects to undo an applied action.</p></div>');
+    openModal('Kinetic help', '<p><strong>Kinetic 0.3.0</strong> is an independent toolkit for After Effects 2025 and 2026. Everything starts with the active composition and your selection.</p><div class="help-entry"><strong>Ease · select keyframes first</strong><p>Select two or more keyframes on a numeric property. Drag a handle; hold Shift to align it horizontally or vertically with its endpoint. Release Shift to drag freely. Arrow keys nudge a handle (Shift for larger steps), or paste cubic-bezier values. For Position, use Separate Dimensions first. Spatial Position and Color are skipped. AE may clamp extreme endpoint influences.</p></div><div class="help-entry"><strong>Text · select text layers</strong><p>Choose a movement and apply it at the playhead. Animation uses native text animators. In and Out each start at the playhead. In + out starts at the playhead and ends its exit at the layer out point. Remove clears Kinetic animators only.</p></div><div class="help-entry"><strong>Layers · keep building</strong><p>Create a layer with optional naming, fill, and size. Layer utilities affect your selection. Trim uses the work area; reverse changes stack order. Anchor relocation preserves the artwork position. Anchor and Parent to null require static, unparented 2D layers.</p></div><div class="help-entry"><strong>Motion · select properties</strong><p>Select numeric properties to add an expression. Loop, Ping-pong, and Overshoot need at least two keyframes. Existing unrelated expressions are preserved. Remove clears Kinetic expressions only.</p></div><div class="help-entry"><strong>Scripts · ExtendScript in AE</strong><p>Write or open a text .jsx/.js file. Run script or Ctrl/Cmd+Enter executes it in AE; import never runs code. Use print(...) for the output log. The draft saves locally. Scripts have full AE scripting access; an error does not roll back earlier edits, and not every operation supports Undo. Long scripts cannot be interrupted from the panel.</p></div><div class="help-entry"><strong>Your work stays local</strong><p>Saved curves live in this panel’s local storage. Export JSON for a backup. Browser previews demonstrate the controls; editing a composition requires the installed After Effects extension. All preview animations are illustrative.</p></div><div class="help-entry"><strong>Undo</strong><p>Use Edit → Undo in After Effects to undo an applied action.</p></div>');
   });
   $('settings-button').addEventListener('click', function () {
     openModal('Settings', '<p>Preview and local storage preferences.</p><label class="settings-row"><input type="checkbox" id="setting-repeat"><span>Repeat previews<small>Keep curve, text, and motion previews playing.</small></span></label><label class="settings-row"><input type="checkbox" id="setting-reduce"><span>Reduce motion<small>Show static previews. Your system preference is always respected.</small></span></label><div class="help-entry"><strong>Local by design</strong><p>No account, uploads, or network assets. Settings and saved curves stay on this device.</p></div>', function () {

@@ -1,10 +1,10 @@
-# Validation record — Kinetic 0.2.0
+# Validation record — Kinetic 0.3.0
 
 Date: 23 October 2026 (Asia/Singapore).
 
 ## Completed
 
-- **44 automated tests pass**, run with Node.js 24.13.1 on Windows. Includes curve math and library validation, browser/CEP bridge protocol, host behavior with mocks, text selector-expression evaluation, and smoke-test failure reporting.
+- **53 automated tests pass**, run with Node.js 24.13.1 on Windows. Includes curve math and library validation, browser/CEP bridge protocol, host behavior with mocks, text selector-expression evaluation, custom script evaluation against mocks, and smoke-test failure reporting.
 - Host tests cover signed scalar and vector easing velocities, exterior easing preservation, rollback on host rejection, invalid selections, rotation/scale anchor compensation, every selected subset in a five-layer reverse-order scenario, sequence/trim, and expression ownership.
 - Text tests cover all six presets and all three unit types, In/Out/Both timing, reverse ordering, overshoot, live controls, indexed-group invalidation, staged replacement/rollback, and preservation of unrelated animators/effects.
 - Source JSX and AE smoke script parse as **ECMAScript 3** with Acorn. Browser scripts parse as ECMAScript 2020, within CEP 12's Chromium 99 syntax support.
@@ -22,9 +22,17 @@ Test presets are confined to the localhost preview's local storage; no test pres
 
 ## Redesigned interface
 
-The 0.2 redesign passed JavaScript syntax checks and a static DOM binding audit: 127 unique IDs, with all literal JavaScript ID references resolved. The automated suite remains at 44 passing tests. A separate source review covered the graph coordinate conversion, library toggle, and text-unit control wiring.
+The 0.2 redesign passed JavaScript syntax checks and a static DOM binding audit: 127 unique IDs, with all literal JavaScript ID references resolved. That version had 44 passing tests. A separate source review covered the graph coordinate conversion, library toggle, and text-unit control wiring.
 
 **Visual and browser-interaction verification of the 0.2 redesign is pending.** The preview origin was blocked by the browser's saved permission policy, so no runtime screenshot or responsive-layout result is claimed for this version. The generated concept in `docs/design/` is a design reference, not evidence of runtime behavior. The three-panel page at `docs/screenshots.html` can be used for a future visual review.
+
+## Shift constraints and Scripts workspace (0.3)
+
+- Static review covers Shift-drag for both endpoints and axes, expanded Y ranges, immediate modifier changes, pointer cancellation, and retention of Shift+arrow nudging.
+- The final panel passes ECMAScript 2020 syntax checks and a DOM reference audit (139 unique markup IDs, no duplicate or unresolved literal ID references).
+- Nine new automated tests cover script execution without a composition, validation before execution, print/final-result capture, syntax/runtime errors, line details, preservation of prior edits/logs on failure, output bounds, local declarations, unchanged `$.writeln`, and bridge serialization limits. Preview refuses script execution.
+- The import handler ignores stale file-read callbacks and keeps edits made while a file is loading. Script output is rendered as text, not HTML.
+- These are source and mock checks. Shift pointer interaction, script import/export in the browser, real AE script execution, and the five-tab layout still need runtime verification. The saved browser permission block remains unresolved.
 
 ## Run the real-host smoke test
 

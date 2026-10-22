@@ -13,6 +13,7 @@
     <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16M8 20h8"/></symbol>
     <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></symbol>
     <symbol id="i-motion" viewBox="0 0 24 24"><path d="m13 3-8 11h6l-1 7 9-12h-6l1-6Z"/></symbol>
+    <symbol id="i-script" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 3l-4 18"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7V5Z"/></symbol>
@@ -38,7 +39,7 @@
 
   <div class="app-shell">
     <header class="app-header">
-      <div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2h3v20H3zm5 10L18 2h5L13 12l10 10h-5z"/></svg><span>KINETIC</span><span class="version">0.2.0</span></div>
+      <div class="brand"><svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2h3v20H3zm5 10L18 2h5L13 12l10 10h-5z"/></svg><span>KINETIC</span><span class="version">0.3.0</span></div>
       <div class="header-actions"><button class="icon-button" id="help-button" title="Help" aria-label="Open help"><svg><use href="#i-help"/></svg></button><button class="icon-button" id="settings-button" title="Settings" aria-label="Open settings"><svg><use href="#i-settings"/></svg></button></div>
     </header>
     <nav class="tab-nav" aria-label="Toolkit" role="tablist">
@@ -46,13 +47,14 @@
       <button class="tab" id="tab-text" role="tab" aria-selected="false" aria-controls="page-text" data-tab="text" tabindex="-1"><svg><use href="#i-text"/></svg><span>Text</span></button>
       <button class="tab" id="tab-layers" role="tab" aria-selected="false" aria-controls="page-layers" data-tab="layers" tabindex="-1"><svg><use href="#i-layers"/></svg><span>Layers</span></button>
       <button class="tab" id="tab-motion" role="tab" aria-selected="false" aria-controls="page-motion" data-tab="motion" tabindex="-1"><svg><use href="#i-motion"/></svg><span>Motion</span></button>
+      <button class="tab" id="tab-scripts" role="tab" aria-selected="false" aria-controls="page-scripts" data-tab="scripts" tabindex="-1"><svg><use href="#i-script"/></svg><span>Scripts</span></button>
     </nav>
     <main>
       <section id="page-ease" class="tool-page" role="tabpanel" aria-labelledby="tab-ease">
         <div class="ease-layout">
           <div class="curve-workspace">
             <div class="graph-toolbar"><div class="graph-title">Bézier<span id="curve-name">Smooth</span></div><div class="inline-actions"><button class="icon-button" id="reverse-curve" aria-label="Reverse curve" title="Reverse curve"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4m10-8 4 4-4 4"/></svg></button><button class="icon-button" id="mirror-curve" aria-label="Make curve symmetric" title="Make curve symmetric"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l-5 5 5 5V7zm8 0 5 5-5 5V7z"/></svg></button><button class="icon-button" id="copy-curve" title="Copy Bézier values" aria-label="Copy Bézier values"><svg><use href="#i-copy"/></svg></button><button class="icon-button" id="reset-curve" title="Reset curve" aria-label="Reset curve"><svg><use href="#i-refresh"/></svg></button></div></div>
-            <div class="graph-panel">
+            <div class="graph-panel" title="Hold Shift while dragging a handle to align it horizontally or vertically with its endpoint.">
               <span class="graph-annotation-top" aria-hidden="true"><span>1.0</span></span>
               <svg id="curve-editor" class="curve-editor" viewBox="0 0 440 276" role="group" aria-label="Cubic Bézier curve editor">
                 <defs><pattern id="graph-grid" width="39.4" height="24" x="30" y="12" patternUnits="userSpaceOnUse"><path d="M39.4 0H0v24" class="grid-line"/></pattern></defs>
@@ -114,6 +116,22 @@
         <div class="motion-layout"><div class="motion-visual"><div class="motion-stage"><div class="motion-crosshair"></div><div id="motion-object" class="motion-object"><svg viewBox="0 0 24 24"><path d="M3 2h3v20H3zm5 10L18 2h5L13 12l10 10h-5z"/></svg></div><span class="stage-caption" id="motion-caption">Wiggle preview</span><button class="icon-button stage-play" id="preview-motion" aria-label="Replay motion preview" title="Replay preview"><svg><use href="#i-play"/></svg></button></div><div class="motion-preset-grid" id="motion-presets"></div></div>
           <div class="control-panel"><div class="section-line"><h2 id="motion-title">Wiggle</h2><span class="muted">Expression</span></div><p class="control-description" id="motion-description"></p><div class="field-group" id="frequency-field"><label for="motion-frequency">Frequency <span>per second</span></label><input id="motion-frequency" type="number" value="2" min="0.01" max="100" step="0.1"></div><div class="field-group" id="amplitude-field"><label for="motion-amplitude">Amplitude <span>property units</span></label><input id="motion-amplitude" type="number" value="20" min="0" max="10000" step="1"></div><div class="field-group" id="decay-field" hidden><label for="motion-decay">Decay <span>settling speed</span></label><input id="motion-decay" type="number" value="5" min="0.1" max="100" step="0.1"></div><div class="info-card" id="motion-requirements">Select a numeric property such as Position, Rotation, or Scale.</div><button class="primary-button full" id="apply-motion">Apply expression</button><button class="secondary-button full" id="clear-motion">Remove Kinetic expressions</button></div>
         </div>
+      </section>
+      <section id="page-scripts" class="tool-page" role="tabpanel" aria-labelledby="tab-scripts" hidden>
+        <div class="script-toolbar"><label for="script-editor">ExtendScript</label><div class="inline-actions"><button class="secondary-button" id="import-script" title="Open a .jsx or .js file in the editor">Open JSX</button><button class="secondary-button" id="export-script" title="Save the editor contents as a .jsx file">Save JSX</button></div></div>
+        <input id="script-file" type="file" accept=".jsx,.js,text/javascript,application/javascript,text/plain" hidden>
+        <textarea id="script-editor" class="script-editor" aria-label="Custom ExtendScript code" aria-describedby="script-access-note" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" maxlength="100000">// Use print() to write to the output below.
+var comp = app.project ? app.project.activeItem : null;
+if (comp instanceof CompItem) {
+  print("Composition: " + comp.name);
+  print("Selected layers: " + comp.selectedLayers.length);
+} else {
+  print("Open a composition to inspect its selection.");
+}</textarea>
+        <div class="script-run-row"><button class="primary-button" id="run-script"><svg><use href="#i-play"/></svg>Run script</button><span>Ctrl / Cmd + Enter</span><span id="script-count">0 / 100k</span></div>
+        <p class="script-note" id="script-access-note">Runs with After Effects scripting access. Changes before an error remain; Undo may not reverse every action.</p>
+        <div class="script-toolbar output-toolbar"><h2>Output</h2><button class="secondary-button" id="clear-script-output">Clear</button></div>
+        <pre id="script-output" class="script-output" role="log" aria-live="polite" aria-relevant="text">Ready. Use print(...) for logs. Scripts run only in After Effects.</pre>
       </section>
     </main>
     <footer class="app-footer"><span class="status-dot" id="connection-dot"></span><span class="preview-banner" id="preview-banner" hidden>Preview · open in After Effects</span><span class="context-label" id="selection-context">Connecting…</span><button class="icon-button" id="refresh-status" title="Refresh After Effects selection" aria-label="Refresh After Effects selection"><svg><use href="#i-refresh"/></svg></button></footer>

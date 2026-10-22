@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 — 2026-10-23
+
+### Added
+
+- Hold Shift while dragging Bézier handles to align them horizontally or vertically with their endpoint. The constraint responds immediately to pressing/releasing Shift during a drag.
+- Scripts workspace with a persistent ExtendScript draft, JSX import/export, Ctrl/Cmd+Enter execution, and a bounded output/error log.
+- `print(...)` logging for custom scripts, execution without an active composition, and explicit failure reporting without claiming rollback.
+
+### Verification
+
+- Automated and source checks only. Native AE execution and visual verification remain pending.
+
 ## 0.2.0 — 2026-10-23
 
 ### Changed

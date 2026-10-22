@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.kinetic.panel" ExtensionBundleVersion="0.2.0" ExtensionBundleName="Kinetic">
-  <ExtensionList><Extension Id="com.kinetic.panel.main" Version="0.2.0" /></ExtensionList>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.kinetic.panel" ExtensionBundleVersion="0.3.0" ExtensionBundleName="Kinetic">
+  <ExtensionList><Extension Id="com.kinetic.panel.main" Version="0.3.0" /></ExtensionList>
   <ExecutionEnvironment>
     <HostList><Host Name="AEFT" Version="[25.0,26.9]" /></HostList>
     <LocaleList><Locale Code="All" /></LocaleList>

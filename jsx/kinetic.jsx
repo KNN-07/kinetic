@@ -1,4 +1,4 @@
-// Kinetic 0.2.0 — generated from text.jsx and host.jsx. Run npm run build after editing.
+// Kinetic 0.3.0 — generated from text.jsx and host.jsx. Run npm run build after editing.
 /* Kinetic native text animation. ExtendScript / ES3; host owns the undo group. */
 var KineticText = (function () {
     var SIGNATURE = "// KineticText/v1";
@@ -633,12 +633,58 @@ var Kinetic = (function () {
             return result(count, clear ? "Kinetic motion expressions removed" : "motion expressions applied", warnings);
         });
     }
+    // Deliberately executes user-provided ExtendScript in the AE host, not a sandbox.
+    // A separate local activation prevents normal script var declarations from
+    // replacing runner state; print is a local helper, not a global console patch.
+    function evaluateScript(code, print) { return eval(code); }
+    function runScript(payload) {
+        var code = payload.code, output = "", outputTruncated = false, printed = false, valueText = "";
+        var limit = 16000, outputMarker = "\n[output truncated]", resultMarker = "\n[result truncated]";
+        if (typeof code !== "string" || !/\S/.test(code)) { throw new Error("Enter a nonempty ExtendScript script."); }
+        if (code.length > 100000) { throw new Error("Script must contain at most 100,000 characters."); }
+        function asText(value) {
+            try { return String(value); } catch (ignore) { return "[Unable to convert value to text]"; }
+        }
+        function bounded(text, marker) { return text.length > limit ? text.substr(0, limit - marker.length) + marker : text; }
+        function append(text) {
+            if (outputTruncated) { return; }
+            if (output.length + text.length <= limit) { output += text; return; }
+            output = (output + text.substr(0, limit)).substr(0, limit - outputMarker.length) + outputMarker;
+            outputTruncated = true;
+        }
+        function print() {
+            var i;
+            if (outputTruncated) { return; }
+            if (printed) { append("\n"); }
+            printed = true;
+            for (i = 0; i < arguments.length && !outputTruncated; i++) {
+                if (i > 0) { append(" "); }
+                append(asText(arguments[i]));
+            }
+        }
+        try {
+            undo("Run script", function () {
+                var value = evaluateScript(code, print);
+                valueText = typeof value === "undefined" ? "" : bounded(asText(value), resultMarker);
+            });
+            return {ok: true, message: "Script completed.", data: {output: output, result: valueText}};
+        } catch (error) {
+            var line = null, detail;
+            try { line = error && (error.line || error.lineNumber); } catch (ignoreLine) {}
+            try { detail = error && error.message ? asText(error.message) : asText(error); } catch (ignoreMessage) { detail = "Unknown script error."; }
+            detail = bounded(detail, "\n[error truncated]");
+            return {ok: false, message: "Script failed" + (typeof line === "number" && isFinite(line) && line > 0 ? " at line " + line : "") + ": " + detail,
+                data: {output: output, result: ""}};
+        }
+    }
     function dispatch(request) {
         try {
             if (!request || typeof request.action !== "string") { throw new Error("Request requires an action."); }
             if (request.action === "status") { return stringify(status()); }
-            var payload = request.payload || {}, comp = requireComp(), response;
+            var payload = request.payload || {}, comp, response;
             if (typeof payload !== "object" || payload instanceof Array) { throw new Error("Payload must be an object."); }
+            if (request.action === "scripts.run") { return stringify(runScript(payload)); }
+            comp = requireComp();
             if (request.action === "easing.apply") { response = applyEase(payload, comp); }
             else if (request.action === "layers.create") { response = createLayer(payload, comp); }
             else if (request.action === "layers.tool") { response = layerTool(payload, comp); }
@@ -650,7 +696,11 @@ var Kinetic = (function () {
                 if (typeof response.ok === "undefined") { response.ok = true; }
             } else { throw new Error("Unknown action: " + request.action); }
             return stringify(response);
-        } catch (error) { return stringify({ok: false, message: error.message || error.toString()}); }
+        } catch (error) {
+            var failure = {ok: false, message: error.message || error.toString()};
+            if (request && request.action === "scripts.run") { failure.data = {output: "", result: ""}; }
+            return stringify(failure);
+        }
     }
     return {dispatch: dispatch};
 }());
